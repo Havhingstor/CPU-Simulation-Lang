@@ -1,12 +1,19 @@
+%{
+#include <stdio.h>
+int yylex();
+void yyerror(char * s);
+%}
+
 %%
 
 %token <value> NUMBER;
 %token <name> IDENTIFIER;
-%token PROGRAM BEGIN END VAR PROCEDURE FUNCTION IF THEN ELSE WHILE DO REPEAT UNTIL FOR BY RETURN;
+%token _PROGRAM _BEGIN _END _VAR _PROCEDURE _FUNCTION _IF _THEN;
+%token _ELSE _WHILE _DO _REPEAT _UNTIL _FOR _BY _RETURN;
 
 %union {
-	char * name
-	int value
+	char * name;
+	int value;
 };
 
 %left '+' '-';
@@ -14,137 +21,151 @@
 
 %start program;
 
-program:
-	head varSections procedures body;
+epsilon			:										{;}
+				;
 
-head:
-	PROGRAM IDENTIFIER ';';
+program			: head varSections procedures body		{;}
+				;
 
-body:
-	BEGIN instructionSequence END IDENTIFIER '.';
+head			: _PROGRAM IDENTIFIER ';'				{;}
+				;
 
-varSections:
-	  varSections varSection
-	| varSection
-	|  /* Epsilon */;
+body			: _BEGIN instructionSequence _END
+				IDENTIFIER '.'							{;}
+				;
 
-varSection:
-	VAR varDeclarations ';';
+varSections		: varSections varSection				{;}
+				| varSection							{;}
+				| epsilon								{;}
+				;
 
-procedureVarSection:
-	  varSection
-	| /* Epsilon */;
+varSection		: _VAR varDeclarations ';'				{;}
+				;
+
+procedureVarSection
+				: varSection							{;}
+				| epsilon								{;}
+				;
 
 varDeclarations:
-	  varDeclarations ',' varDeclaration
-	| varDeclaration;
+	  varDeclarations ',' varDeclaration		{;}
+	| varDeclaration		{;};
 
 varDeclaration:
-	  IDENTIFIER '[' NUMBER ']'
-    | IDENTIFIER;
+	  IDENTIFIER '[' NUMBER ']'		{;}
+    | IDENTIFIER		{;};
 
 procedures:
-	  procedures procedure
-	| procedure
-    | /* Epsilon */;
+	  procedures procedure		{;}
+	| procedure		{;}
+    | epsilon		{;};
 
 procedure:
 	  procedureHeader IDENTIFIER '(' paramList ')' procedureVarSection
-	  	BEGIN instructionSequence END IDENTIFIER;
+	  	_BEGIN instructionSequence _END IDENTIFIER		{;};
 
 procedureHeader:
-	  PROCEDURE
-	| FUNCTION;
+	  _PROCEDURE		{;}
+	| _FUNCTION		{;};
 
 paramList:
-	  paramList ',' parameter
-	| parameter
-	| /* Epsilon */;
+	  paramList ',' parameter		{;}
+	| parameter		{;}
+	| epsilon		{;};
 
 parameter:
-	  VAR varDeclaration
-	| varDeclaration;
+	  _VAR varDeclaration		{;}
+	| varDeclaration		{;};
 
 instructionSequence:
-	  instructionSequence ';' instruction
-	| instruction;
+	  instructionSequence ';' instruction		{;}
+	| instruction		{;};
 
 instruction:
-	  assignment
-	| conditionalInstruction
-	| whileLoop
-	| repeatUntilLoop
-	| forLoop
-	| procedureCall
-	| returnStatement;
+	  assignment		{;}
+	| conditionalInstruction		{;}
+	| whileLoop		{;}
+	| repeatUntilLoop		{;}
+	| forLoop		{;}
+	| procedureCall		{;}
+	| returnStatement		{;};
 
 assignment:
-	varCall ':' '=' expression;
+	varCall ':' '=' expression		{;};
 
 varCall:
-	  IDENTIFIER '[' expression ']'
-	| IDENTIFIER;
+	  IDENTIFIER '[' expression ']'		{;}
+	| IDENTIFIER		{;};
 
 conditionalInstruction:
-	IF condition THEN instructionSequence elseSection END;
+	_IF condition _THEN instructionSequence elseSection _END		{;};
 
 elseSection:
-	  ELSE instructionSequence
-	| /* Epsilon */;
+	  _ELSE instructionSequence		{;}
+	| epsilon		{;};
 
 whileLoop:
-	WHILE condition DO instructionSequence END;
+	_WHILE condition _DO instructionSequence _END		{;};
 
 repeatUntilLoop:
-	REPEAT instructionSequence UNTIL condition;
+	_REPEAT instructionSequence _UNTIL condition		{;};
 
 forLoop:
-	FOR IDENTIFIER ':' '=' expression iterativeAdvancement DO instructionSequence END;
+	_FOR IDENTIFIER ':' '=' expression iterativeAdvancement _DO instructionSequence _END		{;};
 
 iterativeAdvancement:
-	  BY '+' NUMBER
-	| BY '-' NUMBER
-	| /* Epsilon */;
+	  _BY '+' NUMBER		{;}
+	| _BY '-' NUMBER		{;}
+	| epsilon		{;};
 
 procedureCall:
-	IDENTIFIER '(' paramListCall ')';
+	IDENTIFIER '(' paramListCall ')'		{;};
 
 paramListCall:
-	  paramListCall ',' expression
-	| expression
-	| /* Epsilon */;
+	  paramListCall ',' expression		{;}
+	| expression		{;}
+	| epsilon		{;};
 
 returnStatement:
-	  RETURN expression
-	| RETURN;
+	  _RETURN expression		{;}
+	| _RETURN		{;};
 
 condition:
-	expression conditionalOperator expression;
+	expression conditionalOperator expression		{;};
 
 conditionalOperator:
-	  '='
-	| '<' '>'
-	| '<'
-	| '>'
-	| '<' '='
-	| '>' '=';
+	  '='		{;}
+	| '<' '>'		{;}
+	| '<'		{;}
+	| '>'		{;}
+	| '<' '='		{;}
+	| '>' '='		{;};
 
 expression:
-	  '(' expression ')'
-	| '-' expression %prec '*'
-	| expression binaryOperator expression
-	| value;
+	  '(' expression ')'		{;}
+	| '-' expression %prec '*'		{;}
+	| expression binaryOperator expression		{;}
+	| value		{;};
 
 binaryOperator:
-	  '+'
-	| '-'
-	| '*'
-	| '/'
-	| '%';
+	  '+'		{;}
+	| '-'		{;}
+	| '*'		{;}
+	| '/'		{;}
+	| '%'		{;};
 
 value:
-	  varCall
-	| NUMBER
-	| procedureCall;
+	  varCall		{;}
+	| NUMBER		{;}
+	| procedureCall		{;};
 
 %%
+
+int main() {
+	return yyparse();
+}
+
+void yyerror (char *s)
+{
+	fprintf(stderr, "%s\n", s);
+}

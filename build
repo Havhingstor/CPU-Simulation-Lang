@@ -1,0 +1,5 @@
+flex Lang.l &&
+bison -dyv Lang.y &&
+
+cc lex.yy.c y.tab.c -o out
+
