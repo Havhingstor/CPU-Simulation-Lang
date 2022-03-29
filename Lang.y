@@ -2,22 +2,7 @@
 
 %token <value> NUMBER;
 %token <name> IDENTIFIER;
-%token PROGRAM;
-%token BEGIN;
-%token END;
-%token VAR;
-%token PROCEDURE;
-%token FUNCTION;
-%token IF;
-%token THEN;
-%token ELSE;
-%token WHILE;
-%token DO;
-%token REPEAT;
-%token UNTIL;
-%token FOR;
-%token BY;
-%token RETURN;
+%token PROGRAM BEGIN END VAR PROCEDURE FUNCTION IF THEN ELSE WHILE DO REPEAT UNTIL FOR BY RETURN;
 
 %union {
 	char * name
@@ -39,29 +24,29 @@ body:
 	BEGIN instructionSequence END IDENTIFIER '.';
 
 varSections:
-	  /* Epsilon */
+	  varSections varSection
 	| varSection
-	| varSections varSection;
+	|  /* Epsilon */;
 
 varSection:
 	VAR varDeclarations ';';
 
 procedureVarSection:
-	  /* Epsilon */
-	| varSection;
+	  varSection
+	| /* Epsilon */;
 
 varDeclarations:
-	  varDeclaration
-	| varDeclarations ',' varDeclaration;
+	  varDeclarations ',' varDeclaration
+	| varDeclaration;
 
 varDeclaration:
-      IDENTIFIER
-	| IDENTIFIER '[' NUMBER ']';
+	  IDENTIFIER '[' NUMBER ']'
+    | IDENTIFIER;
 
 procedures:
-      /* Epsilon */
+	  procedures procedure
 	| procedure
-	| procedures procedure;
+    | /* Epsilon */;
 
 procedure:
 	  procedureHeader IDENTIFIER '(' paramList ')' procedureVarSection
@@ -72,17 +57,17 @@ procedureHeader:
 	| FUNCTION;
 
 paramList:
-	  /* Epsilon */
+	  paramList ',' parameter
 	| parameter
-	| paramList ',' parameter;
+	| /* Epsilon */;
 
 parameter:
 	  VAR varDeclaration
 	| varDeclaration;
 
 instructionSequence:
-	  instruction
-	| instructionSequence ';' instruction;
+	  instructionSequence ';' instruction
+	| instruction;
 
 instruction:
 	  assignment
@@ -97,15 +82,15 @@ assignment:
 	varCall ':' '=' expression;
 
 varCall:
-	  IDENTIFIER
-	| IDENTIFIER '[' expression ']';
+	  IDENTIFIER '[' expression ']'
+	| IDENTIFIER;
 
 conditionalInstruction:
 	IF condition THEN instructionSequence elseSection END;
 
 elseSection:
-	  /* Epsilon */
-	| ELSE instructionSequence;
+	  ELSE instructionSequence
+	| /* Epsilon */;
 
 whileLoop:
 	WHILE condition DO instructionSequence END;
@@ -117,21 +102,21 @@ forLoop:
 	FOR IDENTIFIER ':' '=' expression iterativeAdvancement DO instructionSequence END;
 
 iterativeAdvancement:
-	  /* Epsilon */
-	| BY '+' NUMBER
-	| BY '-' NUMBER;
+	  BY '+' NUMBER
+	| BY '-' NUMBER
+	| /* Epsilon */;
 
 procedureCall:
 	IDENTIFIER '(' paramListCall ')';
 
 paramListCall:
-	  /* Epsilon */
+	  paramListCall ',' expression
 	| expression
-	| paramListCall ',' expression;
+	| /* Epsilon */;
 
 returnStatement:
-	  RETURN
-	| RETURN expression;
+	  RETURN expression
+	| RETURN;
 
 condition:
 	expression conditionalOperator expression;
@@ -146,8 +131,8 @@ conditionalOperator:
 
 expression:
 	  '(' expression ')'
-	| expression binaryOperator expression
 	| '-' expression %prec '*'
+	| expression binaryOperator expression
 	| value;
 
 binaryOperator:
