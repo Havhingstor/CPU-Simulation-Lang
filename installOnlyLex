@@ -1,5 +1,5 @@
 cd ~/Desktop/CPU-Simulation-Lang/ &&
 
-./build > .log 2>&1 && ./clean
+./buildOnlyLex > .log 2>&1 && ./clean
 
 cat ./.log 

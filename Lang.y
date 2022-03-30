@@ -24,140 +24,151 @@ void yyerror(char * s);
 epsilon			:										{;}
 				;
 
-program			: head varSections procedures body		{;}
+program			: head varSections procedures body		{printf("Program\n");}
 				;
 
-head			: _PROGRAM IDENTIFIER ';'				{;}
+head			: _PROGRAM IDENTIFIER ';'				{printf("Head\n");}
 				;
 
 body			: _BEGIN instructionSequence _END
-				IDENTIFIER '.'							{;}
+					IDENTIFIER '.'						{printf("Body\n");}
 				;
 
-varSections		: varSections varSection				{;}
+varSections		: varSections varSection				{printf("Var Sections\n");}
 				| varSection							{;}
 				| epsilon								{;}
 				;
 
-varSection		: _VAR varDeclarations ';'				{;}
+varSection		: _VAR varDeclarations ';'				{printf("Var Section\n");}
 				;
 
 procedureVarSection
-				: varSection							{;}
+				: varSection							{printf("P Var Section\n");}
 				| epsilon								{;}
 				;
 
-varDeclarations:
-	  varDeclarations ',' varDeclaration		{;}
-	| varDeclaration		{;};
+varDeclarations	: varDeclarations ',' varDeclaration	{printf("Var Declarations\n");}
+				| varDeclaration						{;}
+				;
 
-varDeclaration:
-	  IDENTIFIER '[' NUMBER ']'		{;}
-    | IDENTIFIER		{;};
+varDeclaration	: IDENTIFIER '[' NUMBER ']'				{printf("Array Declaration\n");}
+			    | IDENTIFIER							{printf("Int declaration\n");}
+				;
 
-procedures:
-	  procedures procedure		{;}
-	| procedure		{;}
-    | epsilon		{;};
+procedures		: procedures procedure					{printf("Procedures\n");}
+				| procedure								{;}
+			    | epsilon								{;}
+				;
 
-procedure:
-	  procedureHeader IDENTIFIER '(' paramList ')' procedureVarSection
-	  	_BEGIN instructionSequence _END IDENTIFIER		{;};
+procedure		: procedureHeader IDENTIFIER '(' paramList ')'
+		   			procedureVarSection _BEGIN instructionSequence _END
+					IDENTIFIER							{printf("Procedure\n");}
+				;
 
-procedureHeader:
-	  _PROCEDURE		{;}
-	| _FUNCTION		{;};
+procedureHeader	: _PROCEDURE							{printf("Procedure-Header\n");}
+				| _FUNCTION								{;}
+				;
 
-paramList:
-	  paramList ',' parameter		{;}
-	| parameter		{;}
-	| epsilon		{;};
+paramList		: paramList ',' parameter				{printf("Param List\n");}
+				| parameter								{;}
+				| epsilon		{;}
+				;
 
-parameter:
-	  _VAR varDeclaration		{;}
-	| varDeclaration		{;};
+parameter		: _VAR varDeclaration					{printf("Parameter\n");}
+				| varDeclaration						{;}
+				;
 
-instructionSequence:
-	  instructionSequence ';' instruction		{;}
-	| instruction		{;};
+instructionSequence
+				: instructionSequence ';' instruction	{printf("Instruction Sequence\n");}
+				| instruction							{;}
+				;
 
-instruction:
-	  assignment		{;}
-	| conditionalInstruction		{;}
-	| whileLoop		{;}
-	| repeatUntilLoop		{;}
-	| forLoop		{;}
-	| procedureCall		{;}
-	| returnStatement		{;};
+instruction		: assignment							{printf("Instruction: Assignment\n");}
+				| conditionalInstruction				{printf("Instruction: Conditional Instruction\n");}
+				| whileLoop								{printf("Instruction: While-Loop\n");}
+				| repeatUntilLoop						{printf("Instruction: Repeat-Until-Loop\n");}
+				| forLoop								{printf("Instruction: For-Loop\n");}
+				| procedureCall							{printf("Instruction: Procedure-Call\n");}
+				| returnStatement						{printf("Instruction: Return-Statement\n");}
+				;
 
-assignment:
-	varCall ':' '=' expression		{;};
+assignment		: varCall ':' '=' expression			{printf("Assignment\n");}
+				;
 
-varCall:
-	  IDENTIFIER '[' expression ']'		{;}
-	| IDENTIFIER		{;};
+varCall			: IDENTIFIER '[' expression ']'			{printf("Var-Call: Array\n");}
+				| IDENTIFIER							{printf("Var-Call: Int\n");}
+				;
 
-conditionalInstruction:
-	_IF condition _THEN instructionSequence elseSection _END		{;};
+conditionalInstruction
+				: _IF condition _THEN instructionSequence
+					elseSection _END					{;}
+				;
 
-elseSection:
-	  _ELSE instructionSequence		{;}
-	| epsilon		{;};
+elseSection		: _ELSE instructionSequence				{printf("Else-Segment\n");}
+				| epsilon								{;}
+				;
 
-whileLoop:
-	_WHILE condition _DO instructionSequence _END		{;};
+whileLoop		: _WHILE condition
+		   			_DO instructionSequence _END		{;}
+				;
 
-repeatUntilLoop:
-	_REPEAT instructionSequence _UNTIL condition		{;};
+repeatUntilLoop	: _REPEAT instructionSequence
+					_UNTIL condition					{;}
+				;
 
-forLoop:
-	_FOR IDENTIFIER ':' '=' expression iterativeAdvancement _DO instructionSequence _END		{;};
+forLoop			: _FOR IDENTIFIER ':' '=' expression
+		  			iterativeAdvancement
+					_DO instructionSequence _END		{;}
+				;
 
-iterativeAdvancement:
-	  _BY '+' NUMBER		{;}
-	| _BY '-' NUMBER		{;}
-	| epsilon		{;};
+iterativeAdvancement
+				: _BY '+' NUMBER						{printf("Positive iterative advancement\n");}
+				| _BY '-' NUMBER						{printf("Negative iterative advancement\n");}
+				| epsilon								{;}
+				;
 
-procedureCall:
-	IDENTIFIER '(' paramListCall ')'		{;};
+procedureCall	: IDENTIFIER '(' paramListCall ')'		{;}
+			  	;
 
-paramListCall:
-	  paramListCall ',' expression		{;}
-	| expression		{;}
-	| epsilon		{;};
+paramListCall	: paramListCall ',' expression			{printf("Param-List-Call\n");}
+				| expression							{;}
+				| epsilon								{;}
+				;
 
-returnStatement:
-	  _RETURN expression		{;}
-	| _RETURN		{;};
+returnStatement	: _RETURN expression					{printf("Return with Value\n");}
+				| _RETURN								{printf("Return without Value\n");}
+				;
 
-condition:
-	expression conditionalOperator expression		{;};
+condition		: expression conditionalOperator
+		   			expression							{printf("Condition\n");}
+				;
 
-conditionalOperator:
-	  '='		{;}
-	| '<' '>'		{;}
-	| '<'		{;}
-	| '>'		{;}
-	| '<' '='		{;}
-	| '>' '='		{;};
+conditionalOperator
+				: '='									{printf("Conditional =\n");}
+				| '<' '>'								{printf("Conditional <>\n");}
+				| '<'									{printf("Conditional <\n");}
+				| '>'									{printf("Conditional >\n");}
+				| '<' '='								{printf("Conditional <=\n");}
+				| '>' '='								{printf("Conditional >=\n");}
+				;
 
-expression:
-	  '(' expression ')'		{;}
-	| '-' expression %prec '*'		{;}
-	| expression binaryOperator expression		{;}
-	| value		{;};
+expression		: '(' expression ')'					{printf("Brackets\n");}
+				| '-' expression %prec '*'				{printf("Negative\n");}
+				| expression binaryOperator expression	{printf("Term\n");}
+				| value									{;}
+				;
 
-binaryOperator:
-	  '+'		{;}
-	| '-'		{;}
-	| '*'		{;}
-	| '/'		{;}
-	| '%'		{;};
+binaryOperator	: '+'									{printf("Plus\n");}
+				| '-'									{printf("Minus\n");}
+				| '*'									{printf("Times\n");}
+				| '/'									{printf("Divided by\n");}
+				| '%'									{printf("Modulo\n");}
+				;
 
-value:
-	  varCall		{;}
-	| NUMBER		{;}
-	| procedureCall		{;};
+value			: varCall								{printf("Value: Var\n");}
+				| NUMBER								{printf("Value: Number\n");}
+				| procedureCall							{printf("Value: Procedure\n");}
+				;
 
 %%
 

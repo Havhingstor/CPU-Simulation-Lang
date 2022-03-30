@@ -1,6 +1,15 @@
 	#include "y.tab.h"
+	#include <stdlib.h>
+
+%x comment
+
+whitespace [\t \n]
 
 %%
+
+"(*"			BEGIN comment;
+<comment>"*)"	BEGIN 0;
+<comment>.		;	
 
 (?i:program)	return _PROGRAM;
 (?i:begin)		return _BEGIN;
@@ -19,7 +28,14 @@
 (?i:by)			return _BY;
 (?i:return)		return _RETURN;
 
-.				{ yylval.name = yytext; return IDENTIFIER; }
+[0-9]+			{ yylval.value = atoi(yytext); return NUMBER; }
+
+whitespace		;
+
+[!-~^A-Za-z0-9$_] return yytext [0];
+
+
+[A-Za-z][A-Za-z0-9$_]*	{ yylval.name = yytext; return IDENTIFIER; }
 
 %%
 
