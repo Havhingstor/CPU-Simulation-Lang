@@ -60,9 +60,9 @@ procedures		: procedures procedure					{printf("Procedures\n");}
 			    | epsilon								{;}
 				;
 
-procedure		: procedureHeader IDENTIFIER '(' paramList ')'
+procedure		: procedureHeader IDENTIFIER '(' paramList ')' ';'
 		   			procedureVarSection _BEGIN instructionSequence _END
-					IDENTIFIER							{printf("Procedure\n");}
+					IDENTIFIER ';'						{printf("Procedure\n");}
 				;
 
 procedureHeader	: _PROCEDURE							{printf("Procedure-Header\n");}
@@ -79,7 +79,8 @@ parameter		: _VAR varDeclaration					{printf("Parameter\n");}
 				;
 
 instructionSequence
-				: instructionSequence ';' instruction	{printf("Instruction Sequence\n");}
+				: instruction ';' instructionSequence	{printf("Instruction Sequence\n");}
+				| instruction ';'						{;}
 				| instruction							{;}
 				;
 
