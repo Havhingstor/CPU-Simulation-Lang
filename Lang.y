@@ -1,5 +1,7 @@
 %{
 #include <stdio.h>
+#include "parsetree.h"
+
 int yylex();
 void yyerror(char * s);
 %}
@@ -9,11 +11,19 @@ void yyerror(char * s);
 %token <value> NUMBER;
 %token <name> IDENTIFIER;
 %token _PROGRAM _BEGIN _END _VAR _PROCEDURE _FUNCTION _IF _THEN;
-%token _ELSE _WHILE _DO _REPEAT _UNTIL _FOR _BY _RETURN;
+%token _ELSE _WHILE _DO _REPEAT _UNTIL _FOR _TO _BY _RETURN;
+
+%type <parsed> program varSections procedures body varSection varDeclarations procedureVarSection;
+%type <parsed> varDeclaration procedure procedureHeader paramList parameter instructionSequence instruction;
+%type <parsed> varCall conditionalInstruction elseSection whileLoop repeatUntilLoop forLoop iterativeAdvancement;
+%type <parsed> procedureCall assignment paramListCall returnStatement condition expression value;
+%type <value> conditionalOperator binaryOperator;
+%type <name> head;
 
 %union {
-	char * name;
+	char *name;
 	int value;
+	struct parseToken *parsed;
 };
 
 %left '+' '-';
@@ -24,151 +34,152 @@ void yyerror(char * s);
 epsilon			:										{;}
 				;
 
-program			: head varSections procedures body		{printf("Program\n");}
+program			: head varSections procedures body		{$$ = createProgram($1, $2, $3, $4);}
 				;
 
-head			: _PROGRAM IDENTIFIER ';'				{printf("Head\n");}
+head			: _PROGRAM IDENTIFIER ';'				{$$ = $2;}
 				;
 
 body			: _BEGIN instructionSequence _END
-					IDENTIFIER '.'						{printf("Body\n");}
+					IDENTIFIER '.'						{$$ = createBody($2, $4);}
 				;
 
-varSections		: varSections varSection				{printf("Var Sections\n");}
-				| varSection							{;}
-				| epsilon								{;}
+varSections		: varSections varSection				{$$ = createVarSections($1, $2);}
+				| varSection							{$$ = createVarSections(NULL, $1);}
+				| epsilon								{$$ = NULL;}
 				;
 
-varSection		: _VAR varDeclarations ';'				{printf("Var Section\n");}
+varSection		: _VAR varDeclarations ';'				{$$ = createVarSection($2);}
 				;
 
 procedureVarSection
-				: varSection							{printf("P Var Section\n");}
-				| epsilon								{;}
+				: varSection							{$$ = createVarSections(NULL, $1);}
+				| epsilon								{$$ = NULL;}
 				;
 
-varDeclarations	: varDeclarations ',' varDeclaration	{printf("Var Declarations\n");}
-				| varDeclaration						{;}
+varDeclarations	: varDeclarations ',' varDeclaration	{$$ = createVarDeclarations($1, $3);}
+				| varDeclaration						{$$ = createVarDeclarations(NULL, $1);}
 				;
 
-varDeclaration	: IDENTIFIER '[' NUMBER ']'				{printf("Array Declaration\n");}
-			    | IDENTIFIER							{printf("Int declaration\n");}
+varDeclaration	: IDENTIFIER '[' NUMBER ']'				{$$ = createVarDeclaration($1, &$3);}
+			    | IDENTIFIER							{$$ = createVarDeclaration($1, NULL);}
 				;
 
-procedures		: procedures procedure					{printf("Procedures\n");}
-				| procedure								{;}
-			    | epsilon								{;}
+procedures		: procedures procedure					{$$ = createProcedures($1, $2);}
+				| procedure								{$$ = createProcedures(NULL, $1);}
+			    | epsilon								{$$ = NULL;}
 				;
 
 procedure		: procedureHeader IDENTIFIER '(' paramList ')' ';'
 		   			procedureVarSection _BEGIN instructionSequence _END
-					IDENTIFIER ';'						{printf("Procedure\n");}
+					IDENTIFIER ';'						{$$ = createProcedure($1, $2, $4,
+						$7, $9, $11);}
 				;
 
-procedureHeader	: _PROCEDURE							{printf("Procedure-Header\n");}
-				| _FUNCTION								{;}
+procedureHeader	: _PROCEDURE							{$$ = createProcedureHeader();}
+				| _FUNCTION								{$$ = createFunctionHeader();}
 				;
 
-paramList		: paramList ',' parameter				{printf("Param List\n");}
-				| parameter								{;}
-				| epsilon		{;}
+paramList		: paramList ',' parameter				{$$ = createParamList($1, $3);}
+				| parameter								{$$ = createParamList(NULL, $1);}
+				| epsilon								{$$ = NULL;}
 				;
 
-parameter		: _VAR varDeclaration					{printf("Parameter\n");}
-				| varDeclaration						{;}
+parameter		: _VAR varDeclaration					{$$ = createReferenceParameter($2);}
+				| varDeclaration						{$$ = createCopyParameter($1);}
 				;
 
 instructionSequence
-				: instruction ';' instructionSequence	{printf("Instruction Sequence\n");}
-				| instruction ';'						{;}
-				| instruction							{;}
+				: instruction ';' instructionSequence	{$$ = createInstructionSequence($1, $3);}
+				| instruction ';'						{$$ = createInstructionSequence($1, NULL);}
+				| instruction							{$$ = createInstructionSequence($1, NULL);}
 				;
 
-instruction		: assignment							{printf("Instruction: Assignment\n");}
-				| conditionalInstruction				{printf("Instruction: Conditional Instruction\n");}
-				| whileLoop								{printf("Instruction: While-Loop\n");}
-				| repeatUntilLoop						{printf("Instruction: Repeat-Until-Loop\n");}
-				| forLoop								{printf("Instruction: For-Loop\n");}
-				| procedureCall							{printf("Instruction: Procedure-Call\n");}
-				| returnStatement						{printf("Instruction: Return-Statement\n");}
+instruction		: assignment							{$$ = $1;}
+				| conditionalInstruction				{$$ = $1;}
+				| whileLoop								{$$ = $1;}
+				| repeatUntilLoop						{$$ = $1;}
+				| forLoop								{$$ = $1;}
+				| procedureCall							{$$ = $1;}
+				| returnStatement						{$$ = $1;}
 				;
 
-assignment		: varCall ':' '=' expression			{printf("Assignment\n");}
+assignment		: varCall ':' '=' expression			{$$ = createAssignment($1, $4);}
 				;
 
-varCall			: IDENTIFIER '[' expression ']'			{printf("Var-Call: Array\n");}
-				| IDENTIFIER							{printf("Var-Call: Int\n");}
+varCall			: IDENTIFIER '[' expression ']'			{$$ = createArrayCall($1, $3);}
+				| IDENTIFIER							{$$ = createVarCall($1);}
 				;
 
 conditionalInstruction
 				: _IF condition _THEN instructionSequence
-					elseSection _END					{;}
+					elseSection _END					{$$ = createConditional($2, $4, $5);}
 				;
 
-elseSection		: _ELSE instructionSequence				{printf("Else-Segment\n");}
-				| epsilon								{;}
+elseSection		: _ELSE instructionSequence				{$$ = createElseSection($2);}
+				| epsilon								{$$ = NULL;}
 				;
 
 whileLoop		: _WHILE condition
-		   			_DO instructionSequence _END		{;}
+		   			_DO instructionSequence _END		{$$ = createWhileLoop($2, $4);}
 				;
 
 repeatUntilLoop	: _REPEAT instructionSequence
-					_UNTIL condition					{;}
+					_UNTIL condition					{$$ = createRepeatLoop($2, $4);}
 				;
 
-forLoop			: _FOR IDENTIFIER ':' '=' expression
+forLoop			: _FOR IDENTIFIER ':' '=' expression _TO expression
 		  			iterativeAdvancement
-					_DO instructionSequence _END		{;}
+					_DO instructionSequence _END		{$$ = createForLoop($2, $5, $7, $8, $10);}
 				;
 
 iterativeAdvancement
-				: _BY '+' NUMBER						{printf("Positive iterative advancement\n");}
-				| _BY '-' NUMBER						{printf("Negative iterative advancement\n");}
-				| epsilon								{;}
+				: _BY '+' NUMBER						{$$ = createPositiveAdvancement($3);}
+				| _BY '-' NUMBER						{$$ = createNegativeAdvancement($3);}
+				| epsilon								{$$ = NULL;}
 				;
 
-procedureCall	: IDENTIFIER '(' paramListCall ')'		{;}
+procedureCall	: IDENTIFIER '(' paramListCall ')'		{$$ = createProcedureCall($1, $3);}
 			  	;
 
-paramListCall	: paramListCall ',' expression			{printf("Param-List-Call\n");}
-				| expression							{;}
-				| epsilon								{;}
+paramListCall	: paramListCall ',' expression			{$$ = createParamListCall($1, $3);}
+				| expression							{$$ = createParamListCall(NULL, $1);}
+				| epsilon								{$$ = NULL;}
 				;
 
-returnStatement	: _RETURN expression					{printf("Return with Value\n");}
-				| _RETURN								{printf("Return without Value\n");}
+returnStatement	: _RETURN expression					{$$ = createReturnStatement($2);}
+				| _RETURN								{$$ = createReturnStatement(NULL);}
 				;
 
 condition		: expression conditionalOperator
-		   			expression							{printf("Condition\n");}
+		   			expression							{$$ = createCondition($1, $2, $3);}
 				;
 
 conditionalOperator
-				: '='									{printf("Conditional =\n");}
-				| '<' '>'								{printf("Conditional <>\n");}
-				| '<'									{printf("Conditional <\n");}
-				| '>'									{printf("Conditional >\n");}
-				| '<' '='								{printf("Conditional <=\n");}
-				| '>' '='								{printf("Conditional >=\n");}
+				: '='									{$$ = 0;}
+				| '<' '>'								{$$ = 1;}
+				| '<'									{$$ = 2;}
+				| '>'									{$$ = 3;}
+				| '<' '='								{$$ = 4;}
+				| '>' '='								{$$ = 5;}
 				;
 
-expression		: '(' expression ')'					{printf("Brackets\n");}
-				| '-' expression %prec '*'				{printf("Negative\n");}
-				| expression binaryOperator expression	{printf("Term\n");}
-				| value									{;}
+expression		: '(' expression ')'					{$$ = createBrackets($2);}
+				| '-' expression %prec '*'				{$$ = createNegation($2);}
+				| expression binaryOperator expression	{$$ = createBinaryExpression($1, $2, $3);}
+				| value									{$$ = createUnaryExpression($1);}
 				;
 
-binaryOperator	: '+'									{printf("Plus\n");}
-				| '-'									{printf("Minus\n");}
-				| '*'									{printf("Times\n");}
-				| '/'									{printf("Divided by\n");}
-				| '%'									{printf("Modulo\n");}
+binaryOperator	: '+'									{$$ = 0;}
+				| '-'									{$$ = 1;}
+				| '*'									{$$ = 2;}
+				| '/'									{$$ = 3;}
+				| '%'									{$$ = 4;}
 				;
 
-value			: varCall								{printf("Value: Var\n");}
-				| NUMBER								{printf("Value: Number\n");}
-				| procedureCall							{printf("Value: Procedure\n");}
+value			: varCall								{$$ = createValueByCall($1);}
+				| NUMBER								{$$ = createValue($1);}
+				| procedureCall							{$$ = createValueByCall($1);}
 				;
 
 %%

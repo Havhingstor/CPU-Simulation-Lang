@@ -1,7 +1,7 @@
-cd ~/Desktop/CPU-Simulation-Lang/
+cd ~/Programmieren/CPU-Simulation-Lang/
 
 flex Lang.l &&
 bison -dyv Lang.y &&
 
-cc lex.yy.c y.tab.c -o out
+cc lex.yy.c y.tab.c parsetree.c -o out
 

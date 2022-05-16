@@ -25,6 +25,7 @@ whitespace [\t \n]
 (?i:repeat)		return _REPEAT;
 (?i:until)		return _UNTIL;
 (?i:for)		return _FOR;
+(?i:to)			return _TO;
 (?i:by)			return _BY;
 (?i:return)		return _RETURN;
 

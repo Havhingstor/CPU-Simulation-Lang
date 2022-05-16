@@ -1,5 +1,6 @@
-cd ~/Desktop/CPU-Simulation-Lang/ &&
+cd ~/Programmieren/CPU-Simulation-Lang/
 
-./build > .log 2>&1 && ./clean
+./build > .log 2>&1
+./clean
 
 cat ./.log 

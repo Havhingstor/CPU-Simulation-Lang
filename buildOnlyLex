@@ -1,4 +1,4 @@
-cd ~/Desktop/CPU-Simulation-Lang/
+cd ~/Programmieren/CPU-Simulation-Lang/
 
 flex Lang.l &&
 bison -dyv Lang.y &&

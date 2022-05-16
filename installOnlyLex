@@ -1,4 +1,4 @@
-cd ~/Desktop/CPU-Simulation-Lang/ &&
+cd ~/Programmieren/CPU-Simulation-Lang/ &&
 
 ./buildOnlyLex > .log 2>&1 && ./clean
 
