@@ -3,6 +3,8 @@
 
 #include "y.tab.h"
 
+typedef enum parseType parseType;
+
 enum parseType {
 	program,
 	body,
@@ -14,107 +16,130 @@ enum parseType {
 	procedure,
 	procedureHeader,
 	functionHeader,
-	parameter,
+	paramList,
+	copyParameter,
+	referenceParameter,
 	instructionSequence,
 	instruction,
 	assignment,
 	varCall,
 	arrayCall,
 	conditionalInstruction,
+	elseSection,
 	whileLoop,
 	repeatLoop,
 	forLoop,
-	iterativeAdvancement,
+	positiveAdvancement,
+	negativeAdvancement,
+    emptyAdvancement,
 	procedureCall,
+	paramListCall,
 	returnStatement,
 	condition,
+	negation,
 	expression,
 	value
 };
 
+char *stringFromParseType(parseType type);
+
+typedef enum valueType valueType;
+
+enum valueType {
+	string,
+	number,
+	token
+};
+
+typedef struct parseToken parseToken;
 
 struct parseToken {
-	enum parseType type;
+	parseType type;
 	YYSTYPE *values;
+	valueType *valueTypes;
 	int nVal;
-	struct parseToken **subNodes;
+	parseToken **subNodes;
 	int nNodes;
 };
 
-struct parseToken *createProgram(char *name, struct parseToken *varSections,
-		struct parseToken *procedures, struct parseToken *body);
+void freeToken(parseToken *token);
 
-struct parseToken *createBody(struct parseToken *instructionSequence, char *name);
+parseToken *createProgram(char *name, parseToken *varSections,
+		parseToken *procedures, parseToken *body);
 
-struct parseToken *createVarSections(const struct parseToken *prevVarSections,
-		const struct parseToken *varSection);
+parseToken *createBody(parseToken *instructionSequence, char *name);
 
-struct parseToken *createVarSection(struct parseToken *varDeclarations);
+parseToken *createVarSections(parseToken *prevVarSections,
+		parseToken *varSection);
 
-struct parseToken *createVarDeclarations(const struct parseToken *prevVarDeclarations,
-		struct parseToken *varDeclaration);
+parseToken *createVarSection(parseToken *varDeclarations);
 
-struct parseToken *createVarDeclaration( char *name, const int *arraySize);
+parseToken *createVarDeclarations(parseToken *prevVarDeclarations,
+		parseToken *varDeclaration);
 
-struct parseToken *createProcedures(const struct parseToken *prevProcedures, const struct parseToken *procedure);
+parseToken *createVarDeclaration( char *name, const int *arraySize);
 
-struct parseToken *createProcedure(struct parseToken *header, char *name, struct parseToken *paramList,
-		struct parseToken *varSection, struct parseToken *instructionSequence,
+parseToken *createProcedures(parseToken *prevProcedures, parseToken *procedure);
+
+parseToken *createProcedure(parseToken *header, char *name, parseToken *paramList,
+		parseToken *varSection, parseToken *instructionSequence,
 		char *confirmIdentifier);
 
-struct parseToken *createProcedureHeader();
+parseToken *createProcedureHeader( void );
 
-struct parseToken *createFunctionHeader();
+parseToken *createFunctionHeader( void );
 
-struct parseToken *createParamList(struct parseToken *prevParamList, struct parseToken *parameter);
+parseToken *createParamList(parseToken *prevParamList, parseToken *parameter);
 
-struct parseToken *createCopyParameter(struct parseToken *varDelaration);
+parseToken *createCopyParameter(parseToken *varDeclaration);
 
-struct parseToken *createReferenceParameter(struct parseToken *varDeclaration);
+parseToken *createReferenceParameter(parseToken *varDeclaration);
 
-struct parseToken *createInstructionSequence(struct parseToken *newInstruction,
-		struct parseToken *prevInstructionSequence);
+parseToken *createInstructionSequence(parseToken *newInstruction,
+		parseToken *prevInstructionSequence);
 
-struct parseToken *createAssignment(struct parseToken *var, struct parseToken *expr);
+parseToken *createAssignment(parseToken *var, parseToken *expr);
 
-struct parseToken *createVarCall(char *name);
+parseToken *createVarCall(char *name);
 
-struct parseToken *createArrayCall(char *name, struct parseToken *index);
+parseToken *createArrayCall(char *name, parseToken *index);
 
-struct parseToken *createConditional(struct parseToken *cond,
-		struct parseToken *instructions, struct parseToken *elseSection);
+parseToken *createConditional(parseToken *cond,
+		parseToken *instructions, parseToken *elseSection);
 
-struct parseToken *createElseSection(struct parseToken *instructions);
+parseToken *createElseSection(parseToken *instructions);
 
-struct parseToken *createWhileLoop(struct parseToken *condition, struct parseToken *instrutions);
+parseToken *createWhileLoop(parseToken *condition, parseToken *instrutions);
 
-struct parseToken *createRepeatLoop(struct parseToken *instructions, struct parseToken *condition);
+parseToken *createRepeatLoop(parseToken *instructions, parseToken *condition);
 
-struct parseToken *createForLoop(char *varName, struct parseToken *init,
-		struct parseToken *target, struct parseToken *iteration, struct parseToken *instructions);
+parseToken *createForLoop(char *varName, parseToken *init,
+		parseToken *target, parseToken *iteration, parseToken *instructions);
 
-struct parseToken *createPositiveAdvancement(int num);
+parseToken *createPositiveAdvancement(int num);
 
-struct parseToken *createNegativeAdvancement(int num);
+parseToken *createNegativeAdvancement(int num);
 
-struct parseToken *createProcedureCall(char *name, struct parseToken *paramList);
+parseToken *createEmptyAdvancement( void );
 
-struct parseToken *createParamListCall(struct parseToken *prevParams, struct parseToken *param);
+parseToken *createProcedureCall(char *name, parseToken *paramList);
 
-struct parseToken *createReturnStatement(struct parseToken *returnedExpression);
+parseToken *createParamListCall(parseToken *prevParams, parseToken *param);
 
-struct parseToken *createCondition(struct parseToken *firstOp, int opCode, struct parseToken *secondOp);
+parseToken *createReturnStatement(parseToken *returnedExpression);
 
-struct parseToken *createBrackets(struct parseToken *internal);
+parseToken *createCondition(parseToken *firstOp, int opCode, parseToken *secondOp);
 
-struct parseToken *createNegation(struct parseToken *internal);
+parseToken *createBrackets(parseToken *internal);
 
-struct parseToken *createBinaryExpression(struct parseToken *firstOp, int opCode, struct parseToken *secondOp);
+parseToken *createNegation(parseToken *internal);
 
-struct parseToken *createUnaryExpression(struct parseToken *value);
+parseToken *createBinaryExpression(parseToken *firstOp, int opCode, parseToken *secondOp);
 
-struct parseToken *createValue(int num);
+parseToken *createUnaryExpression(parseToken *value);
 
-struct parseToken *createValueByCall(struct parseToken *call);
+parseToken *createValue(int num);
+
+parseToken *createValueByCall(parseToken *call);
 
 #endif //PARSETREE_H

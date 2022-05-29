@@ -1,6 +1,6 @@
 cd ~/Programmieren/CPU-Simulation-Lang/
 
-flex Lang.l &&
-bison -dyv Lang.y &&
+flex *.l &&
+bison -dyv *.y &&
 
 cc lex.yy.c onlyLex.c -o onlyLex

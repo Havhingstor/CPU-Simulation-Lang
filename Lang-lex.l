@@ -1,15 +1,18 @@
 	#include "y.tab.h"
 	#include <stdlib.h>
+	#include <stdio.h>
+
+	char *transferStr(const char *origin);
 
 %x comment
 
-whitespace [\t \n]
+whitespace [ \t\n]
 
 %%
 
 "(*"			BEGIN comment;
 <comment>"*)"	BEGIN 0;
-<comment>.		;	
+<comment>.		;
 
 (?i:program)	return _PROGRAM;
 (?i:begin)		return _BEGIN;
@@ -31,15 +34,15 @@ whitespace [\t \n]
 
 [0-9]+			{ yylval.value = atoi(yytext); return NUMBER; }
 
-whitespace		;
+{whitespace}      ;
 
-[!-~^A-Za-z0-9$_] return yytext [0];
+[!-~^A-Za-z0-9$_]   return yytext [0];
 
-
-[A-Za-z][A-Za-z0-9$_]*	{ yylval.name = yytext; return IDENTIFIER; }
+[A-Za-z][A-Za-z0-9$_]*  { yylval.name = transferStr(yytext); return IDENTIFIER; }
 
 %%
 
 int yywrap(void) {
 	return 1;
 }
+

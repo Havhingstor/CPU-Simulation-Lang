@@ -31,4 +31,4 @@ BEGIN
     END;
 
     difference(z1,z2);
-END Ggt
+END Ggt.

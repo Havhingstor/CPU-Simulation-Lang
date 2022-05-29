@@ -1,9 +1,14 @@
 %{
 #include <stdio.h>
+#include <string.h>
 #include "parsetree.h"
+#include "main.h"
 
-int yylex();
+int yylex( void );
 void yyerror(char * s);
+char *transferStr(const char *origin);
+
+parseToken *programToken;
 %}
 
 %%
@@ -13,9 +18,10 @@ void yyerror(char * s);
 %token _PROGRAM _BEGIN _END _VAR _PROCEDURE _FUNCTION _IF _THEN;
 %token _ELSE _WHILE _DO _REPEAT _UNTIL _FOR _TO _BY _RETURN;
 
-%type <parsed> program varSections procedures body varSection varDeclarations procedureVarSection;
+%type <parsed> varSections procedures body varSection varDeclarations procedureVarSection;
 %type <parsed> varDeclaration procedure procedureHeader paramList parameter instructionSequence instruction;
-%type <parsed> varCall conditionalInstruction elseSection whileLoop repeatUntilLoop forLoop iterativeAdvancement;
+%type <parsed> varCall elseSection whileLoop repeatUntilLoop forLoop;
+%type <parsed> iterativeAdvancement conditionalInstruction;
 %type <parsed> procedureCall assignment paramListCall returnStatement condition expression value;
 %type <value> conditionalOperator binaryOperator;
 %type <name> head;
@@ -34,10 +40,10 @@ void yyerror(char * s);
 epsilon			:										{;}
 				;
 
-program			: head varSections procedures body		{$$ = createProgram($1, $2, $3, $4);}
+program			: head varSections procedures body		{programToken = createProgram($1, $2, $3, $4);}
 				;
 
-head			: _PROGRAM IDENTIFIER ';'				{$$ = $2;}
+                head: _PROGRAM IDENTIFIER ';'			{$$ = $2;}
 				;
 
 body			: _BEGIN instructionSequence _END
@@ -46,7 +52,7 @@ body			: _BEGIN instructionSequence _END
 
 varSections		: varSections varSection				{$$ = createVarSections($1, $2);}
 				| varSection							{$$ = createVarSections(NULL, $1);}
-				| epsilon								{$$ = NULL;}
+                | epsilon	                            {$$ = createVarSections(NULL, NULL);}
 				;
 
 varSection		: _VAR varDeclarations ';'				{$$ = createVarSection($2);}
@@ -54,7 +60,7 @@ varSection		: _VAR varDeclarations ';'				{$$ = createVarSection($2);}
 
 procedureVarSection
 				: varSection							{$$ = createVarSections(NULL, $1);}
-				| epsilon								{$$ = NULL;}
+				| epsilon								{$$ = createVarSections(NULL, NULL);}
 				;
 
 varDeclarations	: varDeclarations ',' varDeclaration	{$$ = createVarDeclarations($1, $3);}
@@ -67,7 +73,7 @@ varDeclaration	: IDENTIFIER '[' NUMBER ']'				{$$ = createVarDeclaration($1, &$3
 
 procedures		: procedures procedure					{$$ = createProcedures($1, $2);}
 				| procedure								{$$ = createProcedures(NULL, $1);}
-			    | epsilon								{$$ = NULL;}
+			    | epsilon								{$$ = createProcedures(NULL, NULL);}
 				;
 
 procedure		: procedureHeader IDENTIFIER '(' paramList ')' ';'
@@ -82,7 +88,7 @@ procedureHeader	: _PROCEDURE							{$$ = createProcedureHeader();}
 
 paramList		: paramList ',' parameter				{$$ = createParamList($1, $3);}
 				| parameter								{$$ = createParamList(NULL, $1);}
-				| epsilon								{$$ = NULL;}
+				| epsilon								{$$ = createParamList(NULL, NULL);}
 				;
 
 parameter		: _VAR varDeclaration					{$$ = createReferenceParameter($2);}
@@ -117,7 +123,7 @@ conditionalInstruction
 				;
 
 elseSection		: _ELSE instructionSequence				{$$ = createElseSection($2);}
-				| epsilon								{$$ = NULL;}
+				| epsilon								{$$ = createElseSection(NULL);}
 				;
 
 whileLoop		: _WHILE condition
@@ -136,7 +142,7 @@ forLoop			: _FOR IDENTIFIER ':' '=' expression _TO expression
 iterativeAdvancement
 				: _BY '+' NUMBER						{$$ = createPositiveAdvancement($3);}
 				| _BY '-' NUMBER						{$$ = createNegativeAdvancement($3);}
-				| epsilon								{$$ = NULL;}
+				| epsilon								{$$ = createEmptyAdvancement();}
 				;
 
 procedureCall	: IDENTIFIER '(' paramListCall ')'		{$$ = createProcedureCall($1, $3);}
@@ -144,7 +150,7 @@ procedureCall	: IDENTIFIER '(' paramListCall ')'		{$$ = createProcedureCall($1, 
 
 paramListCall	: paramListCall ',' expression			{$$ = createParamListCall($1, $3);}
 				| expression							{$$ = createParamListCall(NULL, $1);}
-				| epsilon								{$$ = NULL;}
+				| epsilon								{$$ = createParamListCall(NULL, NULL);}
 				;
 
 returnStatement	: _RETURN expression					{$$ = createReturnStatement($2);}
@@ -185,10 +191,17 @@ value			: varCall								{$$ = createValueByCall($1);}
 %%
 
 int main() {
-	return yyparse();
+	int success = yyparse();
+    return handle(programToken, success);
 }
 
 void yyerror (char *s)
 {
 	fprintf(stderr, "%s\n", s);
+}
+    
+char *transferStr(const char *origin) {
+    char *target = malloc(sizeof(origin));
+    strcpy(target, origin);
+    return target;
 }

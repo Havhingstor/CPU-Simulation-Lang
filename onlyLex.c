@@ -18,7 +18,7 @@ int main() {
 }
 
 void printTokenType(int *t) {
-	char * assignment[] = {"NUMBER","IDENTIFIER","PROGRAM","BEGIN","END","VAR","PROCEDURE","FUNCTION","IF","THEN","ELSE","WHILE","DO","REPEAT","UNTIL","FOR","BY","RETURN"};
+	char * assignment[] = {"NUMBER","IDENTIFIER","PROGRAM","BEGIN","END","VAR","PROCEDURE","FUNCTION","IF","THEN","ELSE","WHILE","DO","REPEAT","UNTIL","FOR","TO","BY","RETURN"};
 	
 	tokenType = t;
 
