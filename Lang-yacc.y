@@ -5,7 +5,7 @@
 #include "main.h"
 
 int yylex( void );
-void yyerror(char * s);
+void yyerror(const char * s);
 char *transferStr(const char *origin);
 
 parseToken *programToken;
@@ -21,9 +21,9 @@ parseToken *programToken;
 %type <parsed> varSections procedures body varSection varDeclarations procedureVarSection;
 %type <parsed> varDeclaration procedure procedureHeader paramList parameter instructionSequence instruction;
 %type <parsed> varCall elseSection whileLoop repeatUntilLoop forLoop;
-%type <parsed> iterativeAdvancement conditionalInstruction;
-%type <parsed> procedureCall assignment paramListCall returnStatement condition expression value;
-%type <value> conditionalOperator binaryOperator;
+%type <parsed> iterativeAdvancement conditionalInstruction value procedureCall assignment;
+%type <parsed> paramListCall returnStatement condition expression binaryExpression;
+%type <value> conditionalOperator;
 %type <name> head;
 
 %union {
@@ -134,15 +134,16 @@ repeatUntilLoop	: _REPEAT instructionSequence
 					_UNTIL condition					{$$ = createRepeatLoop($2, $4);}
 				;
 
-forLoop			: _FOR IDENTIFIER ':' '=' expression _TO expression
+forLoop			: _FOR assignment _TO expression
 		  			iterativeAdvancement
-					_DO instructionSequence _END		{$$ = createForLoop($2, $5, $7, $8, $10);}
+					_DO instructionSequence _END		{$$ = createForLoop($2, $4, $5, $7);}
 				;
 
 iterativeAdvancement
 				: _BY '+' NUMBER						{$$ = createPositiveAdvancement($3);}
+				| _BY NUMBER							{$$ = createPositiveAdvancement($2);}
 				| _BY '-' NUMBER						{$$ = createNegativeAdvancement($3);}
-				| epsilon								{$$ = createEmptyAdvancement();}
+				| epsilon								{$$ = createPositiveAdvancement(1);}
 				;
 
 procedureCall	: IDENTIFIER '(' paramListCall ')'		{$$ = createProcedureCall($1, $3);}
@@ -170,17 +171,18 @@ conditionalOperator
 				| '>' '='								{$$ = 5;}
 				;
 
-expression		: '(' expression ')'					{$$ = createBrackets($2);}
-				| '-' expression %prec '*'				{$$ = createNegation($2);}
-				| expression binaryOperator expression	{$$ = createBinaryExpression($1, $2, $3);}
+expression
+				: '(' expression ')'					{$$ = createBrackets($2);}
+				| '-' expression 						{$$ = createNegation($2);}
 				| value									{$$ = createUnaryExpression($1);}
+				| binaryExpression						{$$ = $1;}
 				;
 
-binaryOperator	: '+'									{$$ = 0;}
-				| '-'									{$$ = 1;}
-				| '*'									{$$ = 2;}
-				| '/'									{$$ = 3;}
-				| '%'									{$$ = 4;}
+binaryExpression: expression '+' expression				{$$ = createBinaryExpression($1, 0, $3);}
+				| expression '-' expression				{$$ = createBinaryExpression($1, 1, $3);}
+				| expression '*' expression				{$$ = createBinaryExpression($1, 2, $3);}
+				| expression '/' expression				{$$ = createBinaryExpression($1, 3, $3);}
+				| expression '%' expression				{$$ = createBinaryExpression($1, 4, $3);}
 				;
 
 value			: varCall								{$$ = createValueByCall($1);}
@@ -195,13 +197,14 @@ int main() {
     return handle(programToken, success);
 }
 
-void yyerror (char *s)
+void yyerror (const char *s)
 {
-	fprintf(stderr, "%s\n", s);
+	extern int yylineno;
+	fprintf(stderr, "An error occurred (%s) in line %i!\n", s, yylineno);
 }
     
 char *transferStr(const char *origin) {
-    char *target = malloc(sizeof(origin));
+    char *target = malloc(strlen(origin) + 1);
     strcpy(target, origin);
     return target;
 }

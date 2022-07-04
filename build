@@ -3,5 +3,5 @@ cd ~/Programmieren/CPU-Simulation-Lang/
 flex *.l &&
 bison -dyv *.y &&
 
-cc lex.yy.c y.tab.c parsetree.c main.c -o compiler
+cc lex.yy.c y.tab.c parsetree.c main.c interpreter.c -o compiler
 

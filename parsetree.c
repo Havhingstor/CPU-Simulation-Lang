@@ -27,13 +27,24 @@ void initNodes(parseToken *token, int n) {
 
 void freeToken(parseToken *token)
 {
-	free(token->values);
-	
-	for(int i = 0; i < token->nNodes; ++i) {
-		freeToken(token->subNodes[i]);
+	if(token == NULL) {
+		return;
+	}
+
+	if(token->values != NULL) {
+		free(token->values);
 	}
 	
-	free(token->subNodes);
+	for(int i = 0; i < token->nNodes; ++i) {
+		parseToken *subNode = token->subNodes[i];
+		if(subNode != NULL) {
+			freeToken(token->subNodes[i]);
+		}
+	}
+	
+	if(token->subNodes != NULL) {
+		free(token->subNodes);
+	}
 	
 	free(token);
 }
@@ -327,7 +338,7 @@ parseToken *createVarCall(char *name)
 	
 	initVals(result, 1);
 	result->values[0].name = name;
-	result->valueTypes[1] = string;
+	result->valueTypes[0] = string;
 	
 	initNodes(result, 0);
 	
@@ -419,19 +430,17 @@ parseToken *createRepeatLoop(parseToken *instructions, parseToken *condition)
 
 }
 
-parseToken *createForLoop(char *varName, parseToken *init,
+parseToken *createForLoop(parseToken *assignment,
 		parseToken *target, parseToken *iteration, parseToken *instructions)
 {
 	parseToken *result = (parseToken *) malloc(sizeof(parseToken));
 	
 	result->type = forLoop;
 	
-	initVals(result, 1);
-	result->values[0].name = varName;
-	result->valueTypes[0] = string;
+	initVals(result, 0);
 	
 	initNodes(result, 4);
-	result->subNodes[0] = init;
+	result->subNodes[0] = assignment;
 	result->subNodes[1] = target;
 	result->subNodes[2] = iteration;
 	result->subNodes[3] = instructions;
@@ -471,20 +480,6 @@ parseToken *createNegativeAdvancement(int num)
 	initNodes(result, 0);
 	
 	return result;
-
-}
-
-parseToken *createEmptyAdvancement( void )
-{
-    parseToken *result = (parseToken *) malloc(sizeof(parseToken));
-    
-    result->type = emptyAdvancement;
-    
-    initVals(result, 0);
-    
-    initNodes(result, 0);
-    
-    return result;
 
 }
 

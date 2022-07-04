@@ -1,0 +1,10 @@
+PROGRAM Test;
+VAR i, j;
+BEGIN
+
+	FOR i := 35 TO 15 * 2 BY -2
+	DO
+		j := j + i
+	END
+
+END Test.

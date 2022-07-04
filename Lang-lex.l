@@ -5,6 +5,7 @@
 	char *transferStr(const char *origin);
 
 %x comment
+%option yylineno
 
 whitespace [ \t\n]
 
@@ -13,6 +14,7 @@ whitespace [ \t\n]
 "(*"			BEGIN comment;
 <comment>"*)"	BEGIN 0;
 <comment>.		;
+<comment>{whitespace}	;
 
 (?i:program)	return _PROGRAM;
 (?i:begin)		return _BEGIN;
@@ -32,13 +34,13 @@ whitespace [ \t\n]
 (?i:by)			return _BY;
 (?i:return)		return _RETURN;
 
-[0-9]+			{ yylval.value = atoi(yytext); return NUMBER; }
+[0-9]+					{ yylval.value = atoi(yytext); return NUMBER; }
 
-{whitespace}      ;
-
-[!-~^A-Za-z0-9$_]   return yytext [0];
+{whitespace}      		;
 
 [A-Za-z][A-Za-z0-9$_]*  { yylval.name = transferStr(yytext); return IDENTIFIER; }
+
+[!-~] 				  	return yytext [0];
 
 %%
 

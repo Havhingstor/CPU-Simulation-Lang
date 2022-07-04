@@ -7,7 +7,9 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "parsetree.h"
+#include "interpreter.h"
 
 void printTabs(int indent) {
     int i = indent;
@@ -43,10 +45,17 @@ void printInfo(parseToken *programToken, int indent) {
 
 int handle(parseToken *programToken, int success) {
     if(success == 0) {
-        printInfo(programToken, 0);
-        printf("Successfully parsed!\n");
-        freeToken(programToken);
+       	//printInfo(programToken, 0);
+		char *assembly = createAssembly(programToken, &success);
+		if(success == 0) {
+			printf("%s", assembly);
+			fprintf(stderr, "Successfully parsed!\n");
+		}
+
+		free(assembly);
     }
+	
+    freeToken(programToken);
     
     return success;
 }

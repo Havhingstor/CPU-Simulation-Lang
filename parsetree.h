@@ -113,7 +113,7 @@ parseToken *createWhileLoop(parseToken *condition, parseToken *instrutions);
 
 parseToken *createRepeatLoop(parseToken *instructions, parseToken *condition);
 
-parseToken *createForLoop(char *varName, parseToken *init,
+parseToken *createForLoop(parseToken *assignment,
 		parseToken *target, parseToken *iteration, parseToken *instructions);
 
 parseToken *createPositiveAdvancement(int num);
