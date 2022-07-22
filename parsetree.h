@@ -6,39 +6,39 @@
 typedef enum parseType parseType;
 
 enum parseType {
-	program,
-	body,
-	varSections,
-	varSection,
-	varDeclarations,
-	varDeclaration,
-	procedures,
-	procedure,
-	procedureHeader,
-	functionHeader,
-	paramList,
-	copyParameter,
-	referenceParameter,
-	instructionSequence,
-	instruction,
-	assignment,
-	varCall,
-	arrayCall,
-	conditionalInstruction,
-	elseSection,
-	whileLoop,
-	repeatLoop,
-	forLoop,
-	positiveAdvancement,
-	negativeAdvancement,
+    program,
+    body,
+    varSections,
+    varSection,
+    varDeclarations,
+    varDeclaration,
+    procedures,
+    procedure,
+    procedureHeader,
+    functionHeader,
+    paramList,
+    copyParameter,
+    referenceParameter,
+    instructionSequence,
+    instruction,
+    assignment,
+    varCall,
+    arrayCall,
+    conditionalInstruction,
+    elseSection,
+    whileLoop,
+    repeatLoop,
+    forLoop,
+    positiveAdvancement,
+    negativeAdvancement,
     emptyAdvancement,
-	procedureCall,
-	paramListCall,
-	returnStatement,
-	condition,
-	negation,
-	expression,
-	value
+    procedureCall,
+    paramListCall,
+    returnStatement,
+    condition,
+    negation,
+    expression,
+    value
 };
 
 char *stringFromParseType(parseType type);
@@ -46,44 +46,44 @@ char *stringFromParseType(parseType type);
 typedef enum valueType valueType;
 
 enum valueType {
-	string,
-	number,
-	token
+    string,
+    number,
+    token
 };
 
 typedef struct parseToken parseToken;
 
 struct parseToken {
-	parseType type;
-	YYSTYPE *values;
-	valueType *valueTypes;
-	int nVal;
-	parseToken **subNodes;
-	int nNodes;
+    parseType type;
+    YYSTYPE *values;
+    valueType *valueTypes;
+    int nVal;
+    parseToken **subNodes;
+    int nNodes;
 };
 
 void freeToken(parseToken *token);
 
 parseToken *createProgram(char *name, parseToken *varSections,
-		parseToken *procedures, parseToken *body);
+        parseToken *procedures, parseToken *body);
 
 parseToken *createBody(parseToken *instructionSequence, char *name);
 
 parseToken *createVarSections(parseToken *prevVarSections,
-		parseToken *varSection);
+        parseToken *varSection);
 
 parseToken *createVarSection(parseToken *varDeclarations);
 
 parseToken *createVarDeclarations(parseToken *prevVarDeclarations,
-		parseToken *varDeclaration);
+        parseToken *varDeclaration);
 
 parseToken *createVarDeclaration( char *name, const int *arraySize);
 
 parseToken *createProcedures(parseToken *prevProcedures, parseToken *procedure);
 
 parseToken *createProcedure(parseToken *header, char *name, parseToken *paramList,
-		parseToken *varSection, parseToken *instructionSequence,
-		char *confirmIdentifier);
+        parseToken *varSection, parseToken *instructionSequence,
+        char *confirmIdentifier);
 
 parseToken *createProcedureHeader( void );
 
@@ -96,7 +96,7 @@ parseToken *createCopyParameter(parseToken *varDeclaration);
 parseToken *createReferenceParameter(parseToken *varDeclaration);
 
 parseToken *createInstructionSequence(parseToken *newInstruction,
-		parseToken *prevInstructionSequence);
+        parseToken *prevInstructionSequence);
 
 parseToken *createAssignment(parseToken *var, parseToken *expr);
 
@@ -105,7 +105,7 @@ parseToken *createVarCall(char *name);
 parseToken *createArrayCall(char *name, parseToken *index);
 
 parseToken *createConditional(parseToken *cond,
-		parseToken *instructions, parseToken *elseSection);
+        parseToken *instructions, parseToken *elseSection);
 
 parseToken *createElseSection(parseToken *instructions);
 
@@ -114,7 +114,7 @@ parseToken *createWhileLoop(parseToken *condition, parseToken *instrutions);
 parseToken *createRepeatLoop(parseToken *instructions, parseToken *condition);
 
 parseToken *createForLoop(parseToken *assignment,
-		parseToken *target, parseToken *iteration, parseToken *instructions);
+        parseToken *target, parseToken *iteration, parseToken *instructions);
 
 parseToken *createPositiveAdvancement(int num);
 

@@ -5,9 +5,9 @@ VAR
 BEGIN
     (* Startwerte *)
     z3 := z4;
-	z1 := 5555;
+    z1 := 5555;
     z2 := 22755;
-	(* eigentliche Berechnung *)
+    (* eigentliche Berechnung *)
     WHILE z1 <> z2
     DO
         IF z1 >= z2

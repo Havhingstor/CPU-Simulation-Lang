@@ -24,37 +24,37 @@ void printInfo(parseToken *programToken, int indent) {
     printf("%s\n\n", stringFromParseType(programToken->type));
     for(int i = 0; i < programToken->nVal; ++i) {
 
-		if(programToken->valueTypes[i] == string){
-			printTabs(indent);
- 	    	printf("%s\n",programToken->values[i].name);
+        if(programToken->valueTypes[i] == string){
+            printTabs(indent);
+            printf("%s\n",programToken->values[i].name);
         } else {
-			printTabs(indent);
-        	printf("%i\n",programToken->values[i].value);
-		}
+            printTabs(indent);
+            printf("%i\n",programToken->values[i].value);
+        }
     }
-	if(programToken->nVal > 0) {
-		printf("\n");
-	}
+    if(programToken->nVal > 0) {
+        printf("\n");
+    }
     for(int i = 0; i < programToken->nNodes; ++i) {
         printInfo(programToken->subNodes[i], indent + 1);
     }
-	if(programToken->nNodes > 0) {
-		printf("\n");
-	}
+    if(programToken->nNodes > 0) {
+        printf("\n");
+    }
 }
 
 int handle(parseToken *programToken, int success) {
     if(success == 0) {
-       	//printInfo(programToken, 0);
-		char *assembly = createAssembly(programToken, &success);
-		if(success == 0) {
-			printf("%s", assembly);
-			fprintf(stderr, "Successfully parsed!\n");
-		}
+        //printInfo(programToken, 0);
+        char *assembly = createAssembly(programToken, &success);
+        if(success == 0) {
+            printf("%s", assembly);
+            fprintf(stderr, "Successfully parsed!\n");
+        }
 
-		free(assembly);
+        free(assembly);
     }
-	
+    
     freeToken(programToken);
     
     return success;

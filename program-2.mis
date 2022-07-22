@@ -22,9 +22,9 @@ BEGIN
     (* Startwerte *)
     difference(z3,z4);
     z2 := 5 + z2;
-	z1 := z1 + z2;
+    z1 := z1 + z2;
     z2 := -(18+2);
-	(* eigentliche Berechnung *)
+    (* eigentliche Berechnung *)
     FOR z1 := 10 TO 55 + 1 BY 1
     DO
         z1 := z1;
