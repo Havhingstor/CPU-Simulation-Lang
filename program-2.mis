@@ -1,33 +1,30 @@
 PROGRAM Ggt;
 (* Berechnet den GGT zweier Zahlen *)
-VAR z1, z2, z3, z4[4];
+VAR z1, z2, z3;
 
-FUNCTION difference(VAR z1, z2[4]);
+PROCEDURE difference(VAR z1, z2);
 VAR v1, v2[4];
 BEGIN
 
-difference(v1, v2);
+z3 := v2[1];
 
-z4 := v2;
-
-IF v1 > z1 THEN
-    RETURN v1
-ELSE
-    RETURN z1;
-END
+FOR z1 := 10 TO 20 BY 1
+DO
+	z1 := z2 + z1;
+END;
 
 END difference;
 
 BEGIN
     (* Startwerte *)
-    difference(z3,z4);
     z2 := 5 + z2;
-    z1 := z1 + z2;
+	z1 := z1 + z2;
     z2 := -(18+2);
-    (* eigentliche Berechnung *)
+	(* eigentliche Berechnung *)
     FOR z1 := 10 TO 55 + 1 BY 1
     DO
         z1 := z1;
-        z2 := z2;
+        z2 := difference(z1,z2);
+RETURN;
     END
 END Ggt.

@@ -4,8 +4,9 @@
 #include "parsetree.h"
 #include "main.h"
 
-int yylex( void );
-void yyerror(const char * s);
+extern int yylex( void );
+extern void yyerror(const char * s);
+extern FILE *yyin;
 char *transferStr(const char *origin);
 
 parseToken *programToken;
@@ -192,8 +193,20 @@ value           : varCall                               {$$ = createValueByCall(
 
 %%
 
-int main() {
+int main(int argc, char **argv) {
+	FILE *in = fopen("", "r");
+	if (argc > 1) {
+		in = fopen(argv[1], "r");
+		if (!in) {
+			fprintf(stderr, "File couldn't be read, using stdin.\n");
+		} else {
+			yyin = in;
+		}
+	}
     int success = yyparse();
+	if (in) {
+		fclose(in);
+	}
     return handle(programToken, success);
 }
 
