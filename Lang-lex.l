@@ -5,6 +5,7 @@
     char *transferStr(const char *origin);
 
 %x comment
+%x lineComment
 %option yylineno
 
 whitespace [ \t\n]
@@ -15,6 +16,11 @@ whitespace [ \t\n]
 <comment>"*)"   BEGIN 0;
 <comment>.      ;
 <comment>{whitespace}   ;
+
+"#"				BEGIN lineComment;
+<lineComment>\n	BEGIN 0;
+<lineComment>.	;
+<lineComment>[ \t]*	;
 
 (?i:program)    return _PROGRAM;
 (?i:begin)      return _BEGIN;
